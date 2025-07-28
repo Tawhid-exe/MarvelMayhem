@@ -184,7 +184,6 @@ void handleMenuClick(int button, int state, int mx, int my) {
 
 // Load all images and set button positions
 void loadMenuAssets() {
-
 	mainMenuScreen = iLoadImage("BG/main.png");
 	subMenuBackground = iLoadImage("BG/mian.png");
 
@@ -197,20 +196,6 @@ void loadMenuAssets() {
 
 	optionButtonImages[0] = iLoadImage("UiElements/buttons.png");
 	optionButtonImages[1] = iLoadImage("UiElements/buttons.png");
-
-	mainMenuScreen = iLoadImage("Images/BG/main.png");
-	subMenuBackground = iLoadImage("Images/BG/L2.png");
-
-	// Load Back button image and define its properties
-	backButtonImage = iLoadImage("Images/Back.png");
-	backButton.x = 50;
-	backButton.y = 50;
-	backButton.width = 150;
-	backButton.height = 75;
-
-	optionButtonImages[0] = iLoadImage("Images/1vs1.png");
-	optionButtonImages[1] = iLoadImage("Images/robot.png");
-
 
 	// two option buttons
 	int optWidth = 250;
@@ -232,7 +217,6 @@ void loadMenuAssets() {
 
 	// main menu buttons
 	char imagePath[100];
-
 	int startY = 525;
 	for (int i = 0; i < BUTTON_COUNT; i++) {
 		sprintf_s(imagePath, sizeof(imagePath), "UiElements/button%d.png", i + 1);
@@ -245,18 +229,4 @@ void loadMenuAssets() {
 	}
 }
 
-
-	int startY = 500;
-	for (int i = 0; i < BUTTON_COUNT; i++) {
-		sprintf_s(imagePath, sizeof(imagePath), "Images/UiElements/button%d.png", i + 1);
-		buttonImages[i] = iLoadImage(imagePath);
-
-		buttons[i].x = 50;
-		buttons[i].y = startY - i * 120;
-		buttons[i].width = 200;
-		buttons[i].height = 100;
-	}
-}
-
 #endif 
-
