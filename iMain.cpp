@@ -1,7 +1,8 @@
 #include "iGraphics.h"
 #include "menu.hpp"
-#include "charecter.hpp"
+#include "character.hpp"
 
+Character captainAmerica;
 int loadingScreen;
 
 // Loading screen variables
@@ -9,6 +10,7 @@ int loadingBarWidth = 0;
 bool loadingDone = false;
 bool goToMainMenu = false;
 bool blinkTextWhite = true;
+static bool assetsLoaded = false;
 
 void iDraw()
 {
@@ -43,19 +45,24 @@ void iDraw()
 	{
 		// Show the actual menu screen after loading
 		showMenu();
+		
+		// On the gameplay screen, render Captain
+		if (currentScreen == 10 && captainAmerica.idleCount > 0) captainAmerica.draw();
+
+		
 	}
 }
 
 
 void iMouseMove(int mx, int my)
 {
-	
+
 }
 
 
 void iPassiveMouseMove(int mx, int my)
 {
-	
+
 	if (goToMainMenu) {
 		// By default, assume nothing is hovered
 		hoveredButtonIndex = -1;
@@ -113,30 +120,48 @@ void iMouse(int button, int state, int mx, int my)
 
 void fixedUpdate()
 {
-	// Game logic can go here for player movement etc.
-	if (isKeyPressed('w') || isSpecialKeyPressed(GLUT_KEY_UP)) {}
-	if (isKeyPressed('a') || isSpecialKeyPressed(GLUT_KEY_LEFT)) {}
-	if (isKeyPressed('s') || isSpecialKeyPressed(GLUT_KEY_DOWN)) {}
-	if (isKeyPressed('d') || isSpecialKeyPressed(GLUT_KEY_RIGHT)) {}
+	// Only process movement after we leave the loading screen
+	if (!goToMainMenu) return;
 
-	
-
+	// Only move Captain on our "play" screen (10)
+	if (currentScreen == 10)
+	{
+		if (isKeyPressed('d'))
+		{
+			captainAmerica.setState(MOVE);
+			captainAmerica.facingRight = true;
+			captainAmerica.moveX += 5;
+		}
+		else if (isKeyPressed('a'))
+		{
+			captainAmerica.setState(MOVE_B);
+			captainAmerica.facingRight = false;
+			captainAmerica.moveX -= 5;
+		}
+		else
+		{
+			captainAmerica.setState(IDLE);
+		}
+	}
 }
 
-// Handles the loading bar animation
+// Handles the loading bar animation on loading screen
 void loadingBar(){
-	if (!loadingDone){
 
+	if (!loadingDone){
 		loadingBarWidth += 5;
 		if (loadingBarWidth >= 500){
 			loadingBarWidth = 500;
 			loadingDone = true;
+
+			//loadCaptainAmerica(captainAmerica);
 		}
 	}
 
 	else{
 		if (isKeyPressed(' ')){
 			goToMainMenu = true;
+			loadCaptainAmerica(captainAmerica);
 			// Load menu 
 			if (mainMenuScreen == -1)
 			{
@@ -150,6 +175,15 @@ void toggleBlinkColor() {
 	blinkTextWhite = !blinkTextWhite;
 }
 
+
+void updateCaptain() {
+	// Only advance frames if we’re on the gameplay screen
+	if (currentScreen == 10)
+		captainAmerica.update();
+}
+
+
+
 int main()
 {
 	// Initialize graphics window
@@ -161,6 +195,14 @@ int main()
 	iSetTimer(350, toggleBlinkColor); // 350 ms = 0.35 sec toggle
 
 	iSetTimer(10, loadingBar);
+
+	iSetTimer(25, fixedUpdate);
+
+	iSetTimer(100, updateCaptain);
+
+	//captainAmerica.characterState = MOVE;
+	//captainAmerica.update();
+	//captainAmerica.draw();
 
 	iStart(); // Start the graphics engine
 
