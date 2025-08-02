@@ -3,14 +3,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+//#include "character.hpp"
 
 #define BUTTON_COUNT 4
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-
 int currentScreen = -1;
-
 
 // Main menu variables
 int mainMenuScreen = -1;
@@ -24,11 +23,9 @@ int optionButtonImages[2];
 int hoveredOptionButtonIndex = -1;
 int subMenuBackground;
 
-
 // Back button variables
 int backButtonImage;
 bool backButtonHover = false;
-
 
 struct Button {
 	int x;
@@ -40,7 +37,6 @@ struct Button {
 Button buttons[BUTTON_COUNT];
 Button backButton;
 Button optionButtons[2];
-
 
 // menu 
 void showMenu() {
@@ -136,7 +132,6 @@ void showMenu() {
 	}
 }
 
-
 void handleMenuClick(int button, int state, int mx, int my) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		if (currentScreen == -1) { // On the main menu
@@ -182,6 +177,45 @@ void handleMenuClick(int button, int state, int mx, int my) {
 	}
 }
 
+void handleHoverAnimation(int mx, int my){
+	// By default, assume nothing is hovered
+	hoveredButtonIndex = -1;
+	hoveredOptionButtonIndex = -1;
+	backButtonHover = false;
+
+	if (currentScreen == -1) { // On the main menu
+		for (int i = 0; i < BUTTON_COUNT; i++) {
+			if (mx >= buttons[i].x && mx <= buttons[i].x + buttons[i].width &&
+				my >= buttons[i].y && my <= buttons[i].y + buttons[i].height) {
+				hoveredButtonIndex = i;
+				break;
+			}
+		}
+	}
+	else if (currentScreen == 0) { // On the Play Sub-Menu
+		// hover for the two option buttons
+		for (int i = 0; i < 2; i++) {
+			if (mx >= optionButtons[i].x && mx <= optionButtons[i].x + optionButtons[i].width &&
+				my >= optionButtons[i].y && my <= optionButtons[i].y + optionButtons[i].height) {
+				hoveredOptionButtonIndex = i;
+				return; // Exit after finding a hover
+			}
+		}
+		//hover for the back button
+		if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
+			my >= backButton.y && my <= backButton.y + backButton.height) {
+			backButtonHover = true;
+		}
+	}
+	else { // On any other sub-screen (Settings, About, Option 1, Option 2)
+		// back button hover
+		if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
+			my >= backButton.y && my <= backButton.y + backButton.height) {
+			backButtonHover = true;
+		}
+	}
+}
+
 // Load all images and set button positions
 void loadMenuAssets() {
 	mainMenuScreen = iLoadImage("BG/main.png");
@@ -213,7 +247,6 @@ void loadMenuAssets() {
 	optionButtons[1].y = (SCREEN_HEIGHT - optHeight) / 2;
 	optionButtons[1].width = optWidth;
 	optionButtons[1].height = optHeight;
-
 
 	// main menu buttons
 	char imagePath[100];
