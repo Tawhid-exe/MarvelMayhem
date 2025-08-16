@@ -2,7 +2,8 @@
 #include "menu.hpp"
 #include "character.hpp"
 
-Character captainAmerica;
+Character captainAmericaP1;
+Character captainAmericaP2;
 int loadingScreen;
 
 // Loading screen variables
@@ -13,7 +14,8 @@ bool blinkTextWhite = true;
 static bool assetsLoaded = false;
 
 // had to declare the function definition here otherwise it was not working 
-void loadingScreenText();  
+void loadingScreenText();
+
 
 void iDraw()
 {
@@ -29,7 +31,6 @@ void iDraw()
 		iRectangle(390, 100, 500, 30);
 		iFilledRectangle(390, 100, loadingBarWidth, 30);
 		loadingScreenText();
-		
 	}
 	else
 	{
@@ -37,7 +38,15 @@ void iDraw()
 		showMenu();
 		
 		// On the gameplay screen, render Captain
-		if (currentScreen == 10) captainAmerica.draw();
+		if (currentScreen == 20){
+			showArenaImages();
+			if(selectedCharacterIndexP1 == 2) captainAmericaP1.draw();
+			if(selectedCharacterIndexP2 == 2){
+				//captainAmericaP2.moveX = 820;
+				captainAmericaP2.draw();
+			}
+
+		}
 
 	}
 }
@@ -69,11 +78,19 @@ void iMouse(int button, int state, int mx, int my)
 // GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN, GLUT_KEY_PAGE UP, GLUT_KEY_PAGE DOWN, GLUT_KEY_HOME, GLUT_KEY_END, GLUT_KEY_INSERT
 
 void fixedUpdate() {
-	if (!goToMainMenu || currentScreen != 10) return;
-	captainAmerica.handleInputMovement();
-	captainAmerica.handleJump();
-	captainAmerica.handleAttack();
-	captainAmerica.handleDefaultState();
+	if (!goToMainMenu || currentScreen != 20) return;
+
+	// Player 1 controls (WASD + FEQ)
+	handleInputMovementP1(captainAmericaP1);
+	handleJumpP1(captainAmericaP1);
+	handleAttackP1(captainAmericaP1);
+	handleDefaultStateP1(captainAmericaP1);
+
+	// Player 2 controls (Arrow keys + )
+	handleInputMovementP2(captainAmericaP2);
+	handleJumpP2(captainAmericaP2);
+	handleAttackP2(captainAmericaP2);
+	handleDefaultStateP2(captainAmericaP2);
 }
 
 // Handles the loading bar animation on loading screen
@@ -92,6 +109,8 @@ void loadingBar(){
 			// Load menu 
 			if (mainMenuScreen == -1){
 				loadMenuAssets();
+				loadCharacterSelectionAssets();
+				loadArenaAssets();
 			}
 		}
 	}
@@ -120,11 +139,11 @@ void toggleBlinkColor() {
 
 void updateCharacters() {
 	// Only advance frames if we’re on the gameplay screen
-	if (currentScreen == 10){
-		captainAmerica.update();
+	if (currentScreen == 20){
+		if(selectedCharacterIndexP1 == 2) captainAmericaP1.update();
+		if(selectedCharacterIndexP2 == 2) captainAmericaP2.update();
 		// ironMan.update();
 	}
-
 }
 
 int main()
@@ -135,7 +154,14 @@ int main()
 	//loading screen background image
 	loadingScreen = iLoadImage("BG/loading.png");
 
-	loadCaptainAmerica(captainAmerica);
+	loadCaptainAmerica(captainAmericaP1);
+	loadCaptainAmerica(captainAmericaP2);
+
+	captainAmericaP1.moveX = 100;        // Player 1 starts on the left
+	captainAmericaP1.facingRight = true; // Player 1 faces right
+
+	captainAmericaP2.moveX = 800;         // Player 2 starts on the right  
+	captainAmericaP2.facingRight = false; // Player 2 faces left
 
 	iSetTimer(350, toggleBlinkColor); // 350 ms = 0.35 sec toggle
 
@@ -145,6 +171,8 @@ int main()
 
 	iSetTimer(100, updateCharacters);
 
+	iSetTimer(100, loadArenaAssets);
+	
 	iStart(); // Start the graphics engine
 
 	return 0;
