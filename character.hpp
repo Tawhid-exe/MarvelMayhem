@@ -62,8 +62,8 @@ struct Character{
 		hp(1000),
 		alive(true),
 		moveX(100),
-		moveY(100),
-		baseY(100),
+		moveY(113),
+		baseY(113),
 		facingRight(true),
 		currentFrame(0),
 		idleCount_R(0), idleCount_L(0),
@@ -75,7 +75,6 @@ struct Character{
 		deadCount_R(0), deadCount_L(0)
 	{}  // initializer list has been used so the body stays empty
 
-	 
 	//initiazile maxFrame for each AnimationState update frames
 	void update() {
 		int maxFrame = 1;
@@ -155,6 +154,8 @@ struct Character{
 	void handleDefaultState();
 };
 
+//Character c1, c2;
+
 // this fuction loads sprites in sequence from a folder
 // *arr points to int array that hold ID of loaded sprites  
 // count is passed by ref for the func to change the original value
@@ -201,84 +202,159 @@ void loadCaptainAmerica(Character &ca) {
 	//loadSprites(ca.deadSprites_L, ca.deadCount_L, "SPRITE/CaptainAmerica/DEAD_L", "dead", 10);
 }
 
-void Character::handleInputMovement() {
+void handleInputMovementP1(Character &c1) {
 	bool moveRight = isKeyPressed('d');
 	bool moveLeft = isKeyPressed('a');
 
 	if (moveLeft) {
-		facingRight = false;
-		moveX -= 5;
+		c1.facingRight = false;
+		c1.moveX -= 5;
 	}
 	if (moveRight) {
-		facingRight = true;
-		moveX += 5;
+		c1.facingRight = true;
+		c1.moveX += 5;
 	}
 }
 
+void handleInputMovementP2(Character &c2) {
+	bool moveRight = isSpecialKeyPressed(GLUT_KEY_RIGHT); // Right arrow
+	bool moveLeft = isSpecialKeyPressed(GLUT_KEY_LEFT);  // Left arrow
+	//bool moveRight = isKeyPressed('l');
+	//bool moveLeft = isKeyPressed('j');
 
-void Character::handleJump() {
+	if (moveLeft) {
+		c2.facingRight = false;
+		c2.moveX -= 5;
+	}
+	if (moveRight) {
+		c2.facingRight = true;
+		c2.moveX += 5;
+	}
+}
+
+void handleJumpP1(Character &c1) {
 	bool wPressed = isKeyPressed('w');
 
-	if (wPressed && !jumpInProgress) {
-		setState(JUMP);
-		currentFrame = 0;
-		jumpInProgress = true;
+	if (wPressed && !c1.jumpInProgress) {
+		c1.setState(JUMP);
+		c1.currentFrame = 0;
+		c1.jumpInProgress = true;
 	}
 
-	if (jumpInProgress) {
-		int f = currentFrame;
-		if (f == 0) moveY += 12;
-		else if (f == 1) moveY += 8;
-		else if (f == 2) moveY += 5;
-		else if (f == 3) moveY -= 5;
-		else if (f == 4) moveY -= 8;
-		else if (f == 5) moveY -= 12;
+	if (c1.jumpInProgress) {
+		int f = c1.currentFrame;
+		if (f == 0) c1.moveY += 12;
+		else if (f == 1) c1.moveY += 8;
+		else if (f == 2) c1.moveY += 5;
+		else if (f == 3) c1.moveY -= 5;
+		else if (f == 4) c1.moveY -= 8;
+		else if (f == 5) c1.moveY -= 12;
 
-		int maxJump = facingRight ? jumpCount_R : jumpCount_L;
-		if (currentFrame >= maxJump - 1) {
-			moveY = baseY;
-			jumpInProgress = false;
+		int maxJump = c1.facingRight ? c1.jumpCount_R : c1.jumpCount_L;
+		if (c1.currentFrame >= maxJump - 1) {
+			c1.moveY = c1.baseY;
+			c1.jumpInProgress = false;
+			c1.setState(IDLE);
+		}
+	}
+}
+void handleJumpP2(Character &c2) {
+	bool upPressed = isSpecialKeyPressed(GLUT_KEY_UP); // Up arrow
+
+	if (upPressed && !c2.jumpInProgress) {
+		c2.setState(JUMP);
+		c2.currentFrame = 0;
+		c2.jumpInProgress = true;
+	}
+
+	if (c2.jumpInProgress) {
+		int f = c2.currentFrame;
+		if (f == 0) c2.moveY += 12;
+		else if (f == 1) c2.moveY += 8;
+		else if (f == 2) c2.moveY += 5;
+		else if (f == 3) c2.moveY -= 5;
+		else if (f == 4) c2.moveY -= 8;
+		else if (f == 5) c2.moveY -= 12;
+
+		int maxJump = c2.facingRight ? c2.jumpCount_R : c2.jumpCount_L;
+		if (c2.currentFrame >= maxJump - 1) {
+			c2.moveY = c2.baseY;
+			c2.jumpInProgress = false;
+			c2.setState(IDLE);
 		}
 	}
 }
 
 
-void Character::handleAttack() {
-	if (jumpInProgress && isKeyPressed('f')) {
-		setState(ATTACK);
+void handleAttackP1(Character &c1) {
+	if (c1.jumpInProgress && isKeyPressed('f')) {
+		c1.setState(ATTACK);
 	}
-
-	if (characterState == ATTACK) {
-		int maxAtk = facingRight ? attackCount_R : attackCount_L;
-		if (currentFrame >= maxAtk - 1) {
+	if (c1.characterState == ATTACK) {
+		int maxAtk = c1.facingRight ? c1.attackCount_R : c1.attackCount_L;
+		if (c1.currentFrame >= maxAtk - 1) {
 			if (isKeyPressed('f')) {
-				currentFrame = 0;
+				c1.currentFrame = 0;
 			}
 			else {
-				setState(IDLE);
+				c1.setState(IDLE);
 			}
 		}
 	}
 	else if (isKeyPressed('f')) {
-		setState(ATTACK);
+		c1.setState(ATTACK);
+	}
+}
+void handleAttackP2(Character &c2) {
+	// Example: Use NUMPAD 0 for attack
+	if (isSpecialKeyPressed(GLUT_KEY_DOWN)) { // INSERT key or change to your attack key
+		c2.setState(ATTACK);
+	}
+
+	if (c2.characterState == ATTACK) {
+		int maxAtk = c2.facingRight ? c2.attackCount_R : c2.attackCount_L;
+		if (c2.currentFrame >= maxAtk - 1) {
+			if (isSpecialKeyPressed(GLUT_KEY_DOWN)) {
+				c2.currentFrame = 0;
+			}
+			else {
+				c2.setState(IDLE);
+			}
+		}
 	}
 }
 
-void Character::handleDefaultState() {
-	if (!jumpInProgress && characterState != ATTACK) {
+void handleDefaultStateP1(Character &c1) {
+	if (!c1.jumpInProgress && c1.characterState != ATTACK) {
 		if (isKeyPressed('a') || isKeyPressed('d')) {
-			setState(WALK);
+			c1.setState(WALK);
 		}
 		else {
-			setState(IDLE);
+			c1.setState(IDLE);
 		}
 
 		// Ground check
-		if (moveY < baseY) {
-			moveY = baseY;
+		if (c1.moveY < c1.baseY) {
+			c1.moveY = c1.baseY;
 		}
 	}
 }
+void handleDefaultStateP2(Character &c2) {
+	if (!c2.jumpInProgress && c2.characterState != ATTACK) {
+		if (isSpecialKeyPressed(GLUT_KEY_LEFT) || isSpecialKeyPressed(GLUT_KEY_RIGHT)) {
+			c2.setState(WALK);
+		}
+		else {
+			c2.setState(IDLE);
+		}
+
+		if (c2.moveY < c2.baseY) {
+			c2.moveY = c2.baseY;
+		}
+	}
+}
+
+
 
 
 #endif
