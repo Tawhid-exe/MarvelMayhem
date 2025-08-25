@@ -46,6 +46,7 @@ int subMenuBackground;
 // Variables for Character Selection
 int characterImages[CHARACTER_COUNT];
 int characterSelectionBackground;
+int selectedCharacter = -1;
 int selectedCharacterP1 = -1;
 int selectedCharacterP2 = -1;
 int selectionImages[2];
@@ -67,6 +68,7 @@ struct Button {
 Button buttons[BUTTON_COUNT];
 Button backButton;
 Button optionButtons[2];
+Button characterButtons[CHARACTER_COUNT]; // Arcade mode buttons
 Button characterButtonsP1[CHARACTER_COUNT]; // Player 1 buttons
 Button characterButtonsP2[CHARACTER_COUNT]; // Player 2 buttons
 
@@ -186,8 +188,34 @@ void showMenu() {
 				iShowImage(newX, newY, newWidth, newHeight, buttonImages[0]);
 			}
 		}
-		else iText(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, "Option 2 Screen", GLUT_BITMAP_TIMES_ROMAN_24);
-		
+
+		else if (currentScreen == 11) {
+			iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, characterSelectionBackground);
+
+			iSetColor(253, 240, 213);
+			iText(550, SCREEN_HEIGHT - 70, "Choose Your Character", GLUT_BITMAP_HELVETICA_18); // Title
+
+			// Showing Character images
+			for (int i = 0; i < CHARACTER_COUNT; i++){
+				iShowImage(characterButtons[i].x, characterButtons[i].y, characterButtons[i].width, characterButtons[i].height, characterImages[i]);
+			}
+
+			// Show border around selected characters and start button;
+			if (selectedCharacter != -1) {
+				iShowImage(characterButtons[selectedCharacter].x - 40, characterButtons[selectedCharacter].y - 40, 210, 210, selectionImages[0]);
+				iShowImage(520, 60, 250, 100, buttonImages[0]);
+			}
+			// Hover effect
+			if (hoveredButtonIndex != -1) {
+				int i = hoveredButtonIndex;
+				double zoomFactor = 1.1;
+				int newWidth = 250 * zoomFactor;
+				int newHeight = 100 * zoomFactor;
+				int newX = 520 - (newWidth - 250) / 2;
+				int newY = 60 - (newHeight - 100) / 2;
+				iShowImage(newX, newY, newWidth, newHeight, buttonImages[0]);
+			}
+		}
 
 		// Back Button
 		if (backButtonHover) {
@@ -203,7 +231,7 @@ void showMenu() {
 		}
 	}
 	else if (currentScreen == 30) {
-		//iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, arenaImages[0]);
+		iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, arenaImages[0]);
 	}
 }
 
@@ -273,6 +301,23 @@ void handleMenuClick(int button, int state, int mx, int my) {
 					}
 				}
 			}
+			// Arcade Mode Character Selection
+			if (currentScreen == 11) {
+				for (int i = 0; i < CHARACTER_COUNT; i++) {
+					// Character selection
+					if (mx >= characterButtons[i].x && mx <= characterButtons[i].x + characterButtons[i].width &&
+						my >= characterButtons[i].y && my <= characterButtons[i].y + characterButtonsP1[i].height) {
+						selectedCharacter = i;
+					}
+
+					// Entering Arena Screen
+					if (selectedCharacter != -1) {
+						if (mx >= 520 && mx <= 520 + 250 && my >= 60 && my <= 60 + 100) {
+							currentScreen = 30;
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -317,6 +362,20 @@ void handleHoverAnimation(int mx, int my){
 		// Start button hover 
 		if (selectedCharacterP1 != -1 && selectedCharacterP2 != -1) {
 			if (mx >= 520 && mx <= 520 + 250 && my >= 50 && my <= 50 + 100) {
+				hoveredButtonIndex = 0;
+			}
+		}
+	}
+	else if (currentScreen == 11) { // On Arcade mode Character Selection
+		// Back button hover
+		if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
+			my >= backButton.y && my <= backButton.y + backButton.height) {
+			backButtonHover = true;
+		}
+
+		// Start button hover 
+		if (selectedCharacter != -1) {
+			if (mx >= 520 && mx <= 520 + 250 && my >= 60 && my <= 60 + 100) {
 				hoveredButtonIndex = 0;
 			}
 		}
@@ -377,7 +436,7 @@ void loadMenuAssets() {
 	}
 
 }
-void loadCharacterSelectionAssets() {
+void loadCharacterAndArenaImages() {
 	// Load character images
 	for (int i = 0; i < CHARACTER_COUNT; i++) {
 		char imagePath[100];
@@ -390,6 +449,10 @@ void loadCharacterSelectionAssets() {
 		sprintf_s(imagePath, sizeof(imagePath), "UiElements/characterSelection%d.png", i + 1);
 		selectionImages[i] = iLoadImage(imagePath);
 	}
+}
+void loadCharacterSelectionAssets() {
+	// Loading Character and Arena Images
+	loadCharacterAndArenaImages();
 
 	// Position settings of characters
 	int charWidth = 100, charHeight = 100;
@@ -423,17 +486,41 @@ void loadCharacterSelectionAssets() {
 	}
 
 }
+void loadCharacterSelectionAssetsForArcade() {
+	// Loading Character and Arena Images
+	loadCharacterAndArenaImages();
 
-void showArenaImages(){
-	iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, arenaImages[0]);
+// Position settings of characters
+	int charWidth = 130, charHeight = 130;
+	int spacingX = 80, spacingY = 50;
+	int cols = 3, rows = 2;
+
+	// total width and height of the grid
+	int totalWidth = 400;
+	int totalHeight = 250;
+
+	// Starting positions to center the grid vertically
+	int startY = (SCREEN_HEIGHT - totalHeight) / 2;
+	int startX = 370;
+
+	for (int i = 0; i < CHARACTER_COUNT; i++){
+		int row = i / cols;
+		int col = i % cols;
+
+		characterButtons[i].x = startX + col* (charWidth + spacingX);
+		characterButtons[i].y = startY + (rows - 1 - row) * (charHeight + spacingY);
+		characterButtons[i].width = charWidth;
+		characterButtons[i].height = charHeight;
+	}
 }
-
 
 void loadArenaAssets(){
 	// Load Arena Images
-	if (currentScreen == 20){
-		arenaImages[0] = iLoadImage("BG/arena1.jpg");
-	}
+	arenaImages[0] = iLoadImage("BG/arena1.jpg");
+}
+
+void showArenaImages(){
+	iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, arenaImages[0]);
 }
 
 #endif 
