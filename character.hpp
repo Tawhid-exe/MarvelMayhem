@@ -202,10 +202,7 @@ void loadCaptainAmerica(Character &ca) {
 	//loadSprites(ca.deadSprites_L, ca.deadCount_L, "SPRITE/CaptainAmerica/DEAD_L", "dead", 10);
 }
 
-void handleInputMovementP1(Character &c1) {
-	bool moveRight = isKeyPressed('d');
-	bool moveLeft = isKeyPressed('a');
-
+void handleInputMovement(Character &c1, bool moveRight, bool moveLeft) {
 	if (moveLeft) {
 		c1.facingRight = false;
 		c1.moveX -= 5;
@@ -216,25 +213,7 @@ void handleInputMovementP1(Character &c1) {
 	}
 }
 
-void handleInputMovementP2(Character &c2) {
-	bool moveRight = isSpecialKeyPressed(GLUT_KEY_RIGHT); // Right arrow
-	bool moveLeft = isSpecialKeyPressed(GLUT_KEY_LEFT);  // Left arrow
-	//bool moveRight = isKeyPressed('l');
-	//bool moveLeft = isKeyPressed('j');
-
-	if (moveLeft) {
-		c2.facingRight = false;
-		c2.moveX -= 5;
-	}
-	if (moveRight) {
-		c2.facingRight = true;
-		c2.moveX += 5;
-	}
-}
-
-void handleJumpP1(Character &c1) {
-	bool wPressed = isKeyPressed('w');
-
+void handleJump(Character &c1, bool wPressed) {
 	if (wPressed && !c1.jumpInProgress) {
 		c1.setState(JUMP);
 		c1.currentFrame = 0;
@@ -258,42 +237,15 @@ void handleJumpP1(Character &c1) {
 		}
 	}
 }
-void handleJumpP2(Character &c2) {
-	bool upPressed = isSpecialKeyPressed(GLUT_KEY_UP); // Up arrow
 
-	if (upPressed && !c2.jumpInProgress) {
-		c2.setState(JUMP);
-		c2.currentFrame = 0;
-		c2.jumpInProgress = true;
-	}
-
-	if (c2.jumpInProgress) {
-		int f = c2.currentFrame;
-		if (f == 0) c2.moveY += 12;
-		else if (f == 1) c2.moveY += 8;
-		else if (f == 2) c2.moveY += 5;
-		else if (f == 3) c2.moveY -= 5;
-		else if (f == 4) c2.moveY -= 8;
-		else if (f == 5) c2.moveY -= 12;
-
-		int maxJump = c2.facingRight ? c2.jumpCount_R : c2.jumpCount_L;
-		if (c2.currentFrame >= maxJump - 1) {
-			c2.moveY = c2.baseY;
-			c2.jumpInProgress = false;
-			c2.setState(IDLE);
-		}
-	}
-}
-
-
-void handleAttackP1(Character &c1) {
-	if (c1.jumpInProgress && isKeyPressed('f')) {
+void handleAttack(Character &c1, bool fPressed) {
+	if (c1.jumpInProgress && fPressed) {
 		c1.setState(ATTACK);
 	}
 	if (c1.characterState == ATTACK) {
 		int maxAtk = c1.facingRight ? c1.attackCount_R : c1.attackCount_L;
 		if (c1.currentFrame >= maxAtk - 1) {
-			if (isKeyPressed('f')) {
+			if (fPressed) {
 				c1.currentFrame = 0;
 			}
 			else {
@@ -301,32 +253,14 @@ void handleAttackP1(Character &c1) {
 			}
 		}
 	}
-	else if (isKeyPressed('f')) {
+	else if (fPressed) {
 		c1.setState(ATTACK);
 	}
 }
-void handleAttackP2(Character &c2) {
-	// Example: Use NUMPAD 0 for attack
-	if (isSpecialKeyPressed(GLUT_KEY_DOWN)) { // INSERT key or change to your attack key
-		c2.setState(ATTACK);
-	}
 
-	if (c2.characterState == ATTACK) {
-		int maxAtk = c2.facingRight ? c2.attackCount_R : c2.attackCount_L;
-		if (c2.currentFrame >= maxAtk - 1) {
-			if (isSpecialKeyPressed(GLUT_KEY_DOWN)) {
-				c2.currentFrame = 0;
-			}
-			else {
-				c2.setState(IDLE);
-			}
-		}
-	}
-}
-
-void handleDefaultStateP1(Character &c1) {
+void handleDefaultState(Character &c1, bool moveRight, bool moveLeft) {
 	if (!c1.jumpInProgress && c1.characterState != ATTACK) {
-		if (isKeyPressed('a') || isKeyPressed('d')) {
+		if (moveRight || moveLeft) {
 			c1.setState(WALK);
 		}
 		else {
@@ -339,134 +273,8 @@ void handleDefaultStateP1(Character &c1) {
 		}
 	}
 }
-void handleDefaultStateP2(Character &c2) {
-	if (!c2.jumpInProgress && c2.characterState != ATTACK) {
-		if (isSpecialKeyPressed(GLUT_KEY_LEFT) || isSpecialKeyPressed(GLUT_KEY_RIGHT)) {
-			c2.setState(WALK);
-		}
-		else {
-			c2.setState(IDLE);
-		}
-
-		if (c2.moveY < c2.baseY) {
-			c2.moveY = c2.baseY;
-		}
-	}
-}
-
-
-
 
 #endif
-
-
-
-
-
-
-// --------------- might use later -------------------------
-/*
-void loadCaptainAmerica(Character& ca) {
-ca.name = "Captain America";
-
-loadAnimation(ca.idleSprites, ca.idleCount, "Characters/CaptainAmerica/Idle/ca_idle_", 1);
-loadAnimation(ca.moveSprites, ca.moveCount, "Characters/CaptainAmerica/Walk/ca_walk_", 12);
-loadAnimation(ca.moveBackSprites, ca.moveBackCount, "Characters/CaptainAmerica/WalkBack/ca_back_", 12); // optional
-loadAnimation(ca.jumpSprites, ca.jumpCount, "Characters/CaptainAmerica/Jump/ca_jump_", 8);
-loadAnimation(ca.attackSprites, ca.attackCount, "Characters/CaptainAmerica/Attack/ca_atk_", 10);
-loadAnimation(ca.skillSprites, ca.skillCount, "Characters/CaptainAmerica/Skill/ca_skill_", 15);
-loadAnimation(ca.ultimateSprites, ca.ultimateCount, "Characters/CaptainAmerica/Ultimate/ca_ult_", 20);
-loadAnimation(ca.deadSprites, ca.deadCount, "Characters/CaptainAmerica/Dead/ca_dead_", 10);
-}
-
-void draw() {
-	int* spriteArray = nullptr;
-	int count = 0;
-
-	switch (characterState) {
-	case IDLE:
-		if (facingRight) {
-			spriteArray = idleSprites_R;
-			count = idleCount_R;
-		}
-		else {
-			spriteArray = idleSprites_L;
-			count = idleCount_L;
-		} break;
-	case WALK:
-		if (facingRight) {
-			spriteArray = walkSprites_R;
-			count = walkCount_R;
-		}
-		else {
-			spriteArray = walkSprites_L;
-			count = walkCount_L;
-		} break;
-
-	case JUMP:
-		if (facingRight) {
-			spriteArray = jumpSprites_R;
-			count = jumpCount_R;
-		}
-		else {
-			spriteArray = jumpSprites_L;
-			count = jumpCount_L;
-		} break;
-
-	case ATTACK:
-		if (facingRight) {
-			spriteArray = attackSprites_R;
-			count = attackCount_R;
-		}
-		else {
-			spriteArray = attackSprites_L;
-			count = attackCount_L;
-		} break;
-
-	case SKILL:
-		if (facingRight) {
-			spriteArray = skillSprites_R;
-			count = skillCount_R;
-		}
-		else {
-			spriteArray = skillSprites_L;
-			count = skillCount_L;
-		} break;
-
-	case ULTIMATE:
-		if (facingRight) {
-			spriteArray = ultimateSprites_R;
-			count = ultimateCount_R;
-		}
-		else {
-			spriteArray = ultimateSprites_L;
-			count = ultimateCount_L;
-		} break;
-
-	case DEAD:
-		if (facingRight) {
-			spriteArray = deadSprites_R;
-			count = deadCount_R;
-		}
-		else {
-			spriteArray = deadSprites_L;
-			count = deadCount_L;
-		} break;
-	}
-
-	if (spriteArray && spriteArray[currentFrame] >= 0) {
-		iShowImage(moveX, moveY, 100, 140, spriteArray[currentFrame]);
-	}
-	else {
-		printf("Invalid image at frame %d\n", currentFrame);
-	}
-}
-
-*/
-
-
-
-
 
 
 
